@@ -38,7 +38,7 @@ The main objectives of this system are:
 
 ## 4. System Architecture
 
-### 4.1 Architecture Diagram (Mermaid)
+### 4.1 Architecture Diagram 
 
 ```mermaid
 flowchart TD
