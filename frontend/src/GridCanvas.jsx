@@ -24,9 +24,18 @@ function drawGrid(ctx, width, height) {
   }
 }
 
-export default function GridCanvas({ grid, robots }) {
+export default function GridCanvas({ state, onCellClick }) {
   const canvasRef = useRef(null);
   const animatedRef = useRef(new Map());
+  const robots = state.robots || [];
+  const grid = state.grid;
+
+  const handleClick = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+    const y = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+    onCellClick(x, y);
+  };
 
   useEffect(() => {
     const map = animatedRef.current;
@@ -53,6 +62,18 @@ export default function GridCanvas({ grid, robots }) {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGrid(ctx, grid.width, grid.height);
+
+      if (state.obstacles) {
+        state.obstacles.forEach((obs) => {
+          ctx.fillStyle = "#e74c3c";
+          ctx.fillRect(
+            obs.x * CELL_SIZE + 1,
+            obs.y * CELL_SIZE + 1,
+            CELL_SIZE - 2,
+            CELL_SIZE - 2
+          );
+        });
+      }
 
       const robotsMap = animatedRef.current;
       for (const [index, robot] of robots.entries()) {
@@ -84,7 +105,7 @@ export default function GridCanvas({ grid, robots }) {
 
     animationId = window.requestAnimationFrame(render);
     return () => window.cancelAnimationFrame(animationId);
-  }, [grid.height, grid.width, robots]);
+  }, [grid.height, grid.width, robots, state.obstacles]);
 
   return (
     <canvas
@@ -92,6 +113,7 @@ export default function GridCanvas({ grid, robots }) {
       width={grid.width * CELL_SIZE}
       height={grid.height * CELL_SIZE}
       className="grid-canvas"
+      onClick={handleClick}
     />
   );
 }

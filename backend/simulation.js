@@ -16,7 +16,18 @@ const makeRobot = (id) => ({
 const robots = [makeRobot("R1"), makeRobot("R2"), makeRobot("R3")];
 
 const taskQueue = [];
+let obstacles = [];
 let nextTaskId = 1;
+
+function addObstacle(x, y) {
+  const key = `${x},${y}`;
+  const index = obstacles.findIndex((o) => o.x === x && o.y === y);
+  if (index === -1) {
+    obstacles.push({ x, y });
+  } else {
+    obstacles.splice(index, 1);
+  }
+}
 
 function isInsideGrid(x, y) {
   return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT;
@@ -59,11 +70,15 @@ function bfsPath(start, end, blockedSet) {
       const nx = current.x + dx;
       const ny = current.y + dy;
       const nextKey = `${nx},${ny}`;
+      const isObstacle = obstacles.some((o) => o.x === nx && o.y === ny);
 
       if (!isInsideGrid(nx, ny)) {
         continue;
       }
       if (visited.has(nextKey)) {
+        continue;
+      }
+      if (isObstacle) {
         continue;
       }
       if (blockedSet.has(nextKey) && nextKey !== endKey) {
@@ -84,23 +99,18 @@ function distanceManhattan(a, b) {
 }
 
 function assignQueuedTasks() {
-  if (taskQueue.length === 0) {
-    return;
-  }
-
-  for (let i = 0; i < taskQueue.length; i += 1) {
-    const task = taskQueue[i];
+  for (const task of [...taskQueue]) {
     const idleRobots = robots.filter((robot) => robot.status === "idle");
-
     if (idleRobots.length === 0) {
-      return;
+      break;
     }
 
     let selected = idleRobots[0];
-    let bestDist = distanceManhattan(selected, task.start);
+    let bestDist =
+      Math.abs(selected.x - task.end.x) + Math.abs(selected.y - task.end.y);
 
     for (const robot of idleRobots.slice(1)) {
-      const dist = distanceManhattan(robot, task.start);
+      const dist = Math.abs(robot.x - task.end.x) + Math.abs(robot.y - task.end.y);
       if (dist < bestDist) {
         bestDist = dist;
         selected = robot;
@@ -114,13 +124,17 @@ function assignQueuedTasks() {
     );
     const toStart = bfsPath(selected, task.start, blocked);
     const toEnd = bfsPath(task.start, task.end, blocked);
+    const path = [...toStart, ...toEnd];
 
-    selected.path = [...toStart, ...toEnd];
-    selected.task = task;
-    selected.status = selected.path.length > 0 ? "moving" : "idle";
-
-    taskQueue.splice(i, 1);
-    i -= 1;
+    if (path) {
+      selected.path = path;
+      selected.task = task;
+      selected.status = selected.path.length > 0 ? "moving" : "idle";
+      const taskIndex = taskQueue.findIndex((queuedTask) => queuedTask.id === task.id);
+      if (taskIndex >= 0) {
+        taskQueue.splice(taskIndex, 1);
+      }
+    }
   }
 }
 
@@ -194,6 +208,7 @@ function getState() {
     tickMs: TICK_MS,
     robots: getRobots(),
     queuedTasks: [...taskQueue],
+    obstacles: [...obstacles],
   };
 }
 
@@ -203,4 +218,5 @@ module.exports = {
   getRobots,
   getState,
   createTask,
+  addObstacle,
 };

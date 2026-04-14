@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "http://localhost:5000";
 
 export async function fetchState() {
   const response = await fetch(`${BASE_URL}/state`);
@@ -20,4 +20,13 @@ export async function createTask(start, end) {
     throw new Error(payload.error || "Could not create task.");
   }
   return payload;
+}
+
+export async function toggleObstacle(x, y) {
+  const response = await fetch(`${BASE_URL}/obstacle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ x, y }),
+  });
+  return response.json();
 }

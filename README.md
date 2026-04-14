@@ -91,9 +91,9 @@ This project uses foundational algorithmic concepts commonly discussed in AI and
 
 ### 6.1 Greedy Algorithm (Nearest Robot Selection)
 
-- For each new task, the backend checks all idle robots.
-- It selects the robot with the minimum Manhattan distance to task start.
-- Called "greedy" because it makes the best immediate local choice.
+- For each new task, the backend filters all idle robots, calculates Manhattan
+  distance from each robot's current position to the task destination, and assigns
+  the closest one. This minimizes travel time and improves fleet efficiency.
 
 ### 6.2 Graph Traversal - Breadth-First Search (BFS)
 
@@ -279,6 +279,8 @@ The frontend is implemented in React and uses an HTML Canvas for efficient real-
 ## 11. Features (Enhanced)
 
 - Real-time multi-robot fleet simulation on a 20x20 grid.
+- Clickable obstacle placement on grid with real-time BFS rerouting around blocked cells.
+- Nearest-robot assignment using Manhattan distance for optimal task allocation.
 - Automatic nearest-robot assignment for incoming tasks.
 - BFS-based path computation for predictable route generation.
 - Collision-aware, step-by-step robot movement with wait-and-resume behavior.
@@ -307,11 +309,16 @@ The frontend is implemented in React and uses an HTML Canvas for efficient real-
 - On each tick, simulator checks for newly idle robots.
 - Queued tasks are assigned in order with nearest-idle selection at assignment time.
 
+### 12.4 Obstacle Avoidance
+
+- User clicks grid cells to place red obstacles simulating walls or restricted zones.
+- BFS automatically reroutes robots around blocked cells.
+- If no valid path exists, task remains queued until obstacles are cleared.
+
 ---
 
 ## 13. Limitations
 
-- No static or dynamic obstacles in the map.
 - Collision handling is basic (wait logic, no advanced negotiation).
 - No persistent storage/database; state resets on server restart.
 - No priority scheduling, deadline handling, or battery constraints.
@@ -321,7 +328,6 @@ The frontend is implemented in React and uses an HTML Canvas for efficient real-
 
 ## 14. Future Enhancements
 
-- Add obstacle maps and dynamic obstacle avoidance.
 - Use advanced optimization (A*, Hungarian assignment, reinforcement learning policies).
 - Add task priority, robot capacity, and energy-aware scheduling.
 - Integrate persistent database for logs, analytics, and replay.

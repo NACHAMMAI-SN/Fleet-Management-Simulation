@@ -35,6 +35,15 @@ function createRouter(simulation) {
     }
   });
 
+  router.post("/obstacle", (req, res) => {
+    const { x, y } = req.body;
+    if (x === undefined || y === undefined) {
+      return res.status(400).json({ error: "x and y required" });
+    }
+    simulation.addObstacle(x, y);
+    res.json({ success: true });
+  });
+
   return router;
 }
 

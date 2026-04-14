@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
 import GridCanvas from "./GridCanvas";
-import { createTask, fetchState } from "./api";
+import { fetchState, createTask, toggleObstacle } from "./api";
 
 const DEFAULT_FORM = {
   startX: 0,
@@ -22,7 +22,7 @@ export default function App() {
   useEffect(() => {
     fetchState().then(setState).catch((err) => setError(err.message));
 
-    const socket = io("http://localhost:4000");
+    const socket = io("http://localhost:5000");
     socket.on("state:update", (nextState) => {
       setState(nextState);
     });
@@ -45,13 +45,17 @@ export default function App() {
     }
   };
 
+  async function handleCellClick(x, y) {
+    await toggleObstacle(x, y);
+  }
+
   return (
     <main className="page">
       <h1>Fleet Management System with Real-Time Simulation</h1>
       <section className="content">
         <div className="map-panel">
           <h2>Grid Map</h2>
-          <GridCanvas grid={state.grid} robots={robots} />
+          <GridCanvas state={state} onCellClick={handleCellClick} />
         </div>
 
         <aside className="sidebar">
